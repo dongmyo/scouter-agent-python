@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from threading import RLock
+from typing import Dict
 
 observer_lock = RLock()
-observers = {}
+observers: Dict[str, "Runnable"] = {}
 obj_change_observer: "Runnable | None" = None
 
 

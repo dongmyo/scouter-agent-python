@@ -5,7 +5,8 @@ import threading
 import time
 from datetime import datetime
 from collections import OrderedDict
-from configparser import ConfigParser
+
+import javaproperties
 
 from scouterx.common.util.os_util import get_scouter_path
 from scouterx.conf.opserver import obj_change_notify
@@ -37,16 +38,20 @@ class Configure:
 
     def __new__(cls):
         with cls._instance_lock:
-            if cls._instance is None:
-                cls._instance = super(Configure, cls).__new__(cls)
-                cls._instance.init()
-                threading.Thread(target=cls._instance.run).start()
+            if not cls._instance:
+                cls._instance = super().__new__(cls)
+                cls._instance.initialized = False
             return cls._instance
 
     def __init__(self):
-        self.lock = threading.Lock()
-        self.last_modified = datetime.min
-        self._trace = False
+        if not self.initialized:
+            self.lock = threading.Lock()
+            self.last_modified = datetime.min
+            self._trace = False
+            self.initialize_properties()
+            self.initialized = True
+
+    def initialize_properties(self):
         self.trace_obj_send = False
         self.send_queue_size = 3000
         self.obj_hash = 0
@@ -114,7 +119,6 @@ class Configure:
         self.xlog_patterned3_sampling_over_rate_pct = 3000
 
     def init(self):
-        # TODO read system prop
         self.refresh()
 
     def run(self):
@@ -134,7 +138,7 @@ class Configure:
                 pass
             except Exception as e:
                 # TODO logging
-                pass
+                print(f"Error loading config file {file_path}: {e}")
 
     @classmethod
     def get_conf_file_path(cls):
@@ -153,18 +157,17 @@ class Configure:
 
     def reset_obj_name_and_type(self, props):
         default_name = "py1"
-        hostname = socket.gethostname()
-        if not hostname:
+        try:
+            hostname = socket.gethostname()
+        except Exception:
             hostname = "unknown"
-
         old_obj_name = self.obj_name
         new_obj_simple_name = self.string_of(props, "obj_name", default_name, "object name")
         obj_host_name = self.string_of(props, "obj_host_name", hostname, "object host name")
         self.obj_name_simple = new_obj_simple_name
         self.obj_name = f"/{obj_host_name}/{new_obj_simple_name}"
         self.obj_hash = self.hash_string(self.obj_name)
-
-        self.obj_type = self.string_of(props, "obj_type", "golang", "object type (monitoring group)")
+        self.obj_type = self.string_of(props, "obj_type", "python", "object type (monitoring group)")
         if old_obj_name != self.obj_name:
             obj_change_notify()
 
@@ -182,10 +185,21 @@ class Configure:
         return int(hashlib.md5(input_string.encode()).hexdigest(), 16)
 
     def load_properties(self, file_path):
-        config = ConfigParser()
-        config.read(file_path)
-        for section in config.sections():
-            for key, value in config.items(section):
+        with open(file_path, 'rb') as file:
+            properties = javaproperties.load(file)
+
+        for key, value in properties.items():
+            if hasattr(self, key):
+                current_value = getattr(self, key)
+                # Attempt to preserve type of attribute
+                if isinstance(current_value, bool):
+                    value = value.lower() in ['true', '1', 't', 'y', 'yes']
+                elif isinstance(current_value, int):
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass  # handle or log error if conversion is critical
+                # Set attribute with possibly converted value
                 setattr(self, key, value)
 
 
