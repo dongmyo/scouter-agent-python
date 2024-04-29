@@ -19,7 +19,7 @@ class TestSendXlog(unittest.TestCase):
         service = "/test-service/0"
         self.register_obj()
         xlog = XlogPack()
-        xlog.txid = KeyGen().next()
+        xlog.txid = KeyGen.get_instance().next()
         xlog.x_type = "XTYPE_WEB_SERVICE"
         xlog.service = send_service_name(service)
         xlog.elapsed = 100
@@ -40,7 +40,7 @@ class TestSendXlog(unittest.TestCase):
         self.register_obj()
         service = "/test-service/withprofile/0"
         service_hash = send_service_name(service)
-        txid = KeyGen().next()
+        txid = KeyGen.get_instance().next()
 
         context = TraceContext()
         context.x_type = "XTYPE_WEB_SERVICE"

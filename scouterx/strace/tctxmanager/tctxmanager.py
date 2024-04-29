@@ -35,7 +35,7 @@ def get_trace_context_fallback_noop(ctx) -> TraceContext:
 
 
 def get_trace_context(ctx) -> Optional[TraceContext]:
-    return tctx_key.get(None)
+    return tctx_key.get()
 
 
 def get_trace_context_by_txid(txid: int) -> Optional[TraceContext]:

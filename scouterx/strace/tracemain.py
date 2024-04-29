@@ -18,7 +18,7 @@ from scouterx.counter.servicemetering import ServiceMetering
 from scouterx.netio.dataproxy import *
 from scouterx.netio.tcpclient.tcpmanager import start_tcp
 from scouterx.netio.tracecontext import TraceContext
-from scouterx.strace.tctxmanager.tctxmanager import register_end_stuck_service_forcibly_func, get_trace_context, end, start
+from scouterx.strace.tctxmanager.tctxmanager import register_end_stuck_service_forcibly_func, get_trace_context, end, start, new_trace_context
 from scouterx.strace.xlogsampler import get_xlog_sampler
 
 ac = Configure()
@@ -344,7 +344,7 @@ def end_child_goroutine_service(ctx):
 
 
 def start_service_logic(ctx, service_name, remote_addr):
-    new_ctx, tctx = TraceContext(ctx)
+    new_ctx, tctx = new_trace_context(ctx)
     start(tctx)
 
     tctx.gxid = tctx.txid
@@ -585,7 +585,7 @@ def start_api_call_internal(api_call_name, tctx, address):
     if address:
         step.opt = 1
     step.address = address
-    step.txid = KeyGen().next()
+    step.txid = KeyGen.get_instance().next()
     tctx.profile.push(step)
 
     return step
