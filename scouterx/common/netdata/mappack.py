@@ -5,11 +5,12 @@ from scouterx.common.netdata.booleanvalue import BooleanValue
 from scouterx.common.netdata.decimalvalue import DecimalValue
 from scouterx.common.netdata.floatvalue import Float32Value
 from scouterx.common.netdata.listvalue import ListValue
+from scouterx.common.netdata.pack import Pack
 from scouterx.common.netdata.textvalue import TextValue
 from scouterx.common.netdata.value import Value
 
 
-class MapPack:
+class MapPack(Pack):
     def __init__(self):
         self.table = {}
 
@@ -94,3 +95,6 @@ class MapPack:
         for k, v in self.table.items():
             str_repr += f"key: {k} value: {v}\n"
         return str_repr
+
+    def to_string(self) -> str:
+        return str(self)

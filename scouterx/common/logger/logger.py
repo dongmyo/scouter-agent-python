@@ -4,6 +4,11 @@ from logging.handlers import RotatingFileHandler
 
 from scouterx.common.util.os_util import get_scouter_path
 
+trace_logger: logging.Logger | None = None
+info_logger: logging.Logger | None = None
+warning_logger: logging.Logger | None = None
+error_logger: logging.Logger | None = None
+
 
 def init():
     log_path = os.path.join(get_scouter_path(), 'logs')
@@ -22,6 +27,8 @@ def init():
     logging.basicConfig(level=logging.DEBUG, handlers=[file_handler, console_handler])
 
     # Define loggers with different names and levels
+    global trace_logger, info_logger, warning_logger, error_logger
+
     trace_logger = logging.getLogger('trace')
     trace_logger.setLevel(logging.DEBUG)
 
@@ -34,4 +41,3 @@ def init():
     error_logger = logging.getLogger('error')
     error_logger.setLevel(logging.ERROR)
 
-    return trace_logger, info_logger, warning_logger, error_logger

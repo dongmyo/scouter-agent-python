@@ -1,7 +1,8 @@
 from scouterx.common.constants.packconstant.packconstants import XLOG_PROFILE
+from scouterx.common.netdata.pack import Pack
 
 
-class XlogProfilePack:
+class XlogProfilePack(Pack):
     def __init__(self):
         self.Time = 0
         self.ObjHash = 0
@@ -30,3 +31,6 @@ class XlogProfilePack:
     @classmethod
     def get_pack_type(cls):
         return XLOG_PROFILE
+
+    def to_string(self) -> str:
+        return str(self)

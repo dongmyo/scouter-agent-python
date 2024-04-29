@@ -1,8 +1,9 @@
 from scouterx.common.constants.packconstant.packconstants import OBJECT
 from scouterx.common.netdata.mapvalue import MapValue
+from scouterx.common.netdata.pack import Pack
 
 
-class ObjectPack:
+class ObjectPack(Pack):
     def __init__(self):
         self.obj_type = ""
         self.obj_hash = 0
@@ -52,6 +53,9 @@ class ObjectPack:
     @classmethod
     def get_pack_type(cls):
         return OBJECT
+
+    def to_string(self) -> str:
+        return str(self)
 
 
 class ObjectPack2(ObjectPack):

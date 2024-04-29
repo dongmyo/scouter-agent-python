@@ -3,6 +3,7 @@ import os
 import socket
 import threading
 import time
+from copy import deepcopy
 from datetime import datetime
 from collections import OrderedDict
 
@@ -170,6 +171,35 @@ class Configure:
         self.obj_type = self.string_of(props, "obj_type", "python", "object type (monitoring group)")
         if old_obj_name != self.obj_name:
             obj_change_notify()
+
+    def get_configure_desc_map(self):
+        return deepcopy(desc_map)
+
+    def bool_of(self, props, key, default_value, desc):
+        value = props.get(key, str(default_value)).lower() in ['true', '1', 't', 'y', 'yes']
+        desc_map[key] = ConfigureDesc(
+            key=key,
+            value=str(value),
+            default_value=str(default_value),
+            desc=desc,
+            value_type=ValueType.VT_BOOL
+        )
+        return value
+
+    def int_of(self, props, key, default_value, desc):
+        try:
+            value = int(props.get(key, default_value))
+        except ValueError:
+            value = default_value  # Default fallback if conversion fails
+        desc_map[key] = ConfigureDesc(
+            key=key,
+            value=str(value),
+            default_value=str(default_value),
+            desc=desc,
+            value_type=ValueType.VT_NUM
+        )
+
+        return value
 
     def string_of(self, props, key, default_value, desc):
         value = props.get(key, default_value)

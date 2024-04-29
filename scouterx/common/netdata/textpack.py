@@ -1,7 +1,8 @@
 from scouterx.common.constants.packconstant.packconstants import TEXT
+from scouterx.common.netdata.pack import Pack
 
 
-class TextPack:
+class TextPack(Pack):
     def __init__(self, xtype=None, hash_value=0, text=''):
         self.xtype = xtype
         self.hash = hash_value
@@ -30,3 +31,6 @@ class TextPack:
     @classmethod
     def get_pack_type(cls):
         return TEXT
+
+    def to_string(self) -> str:
+        return str(self)

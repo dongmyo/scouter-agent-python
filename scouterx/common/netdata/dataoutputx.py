@@ -18,6 +18,14 @@ class DataOutputX:
         else:
             self.writer = io.BytesIO()
 
+    def write_int32_array(self, values):
+        if values is None:
+            self.write_int16(0)
+        else:
+            self.write_int16(len(values))
+            for value in values:
+                self.write_int32(value)
+
     def write_int32(self, value):
         self.writer.write(struct.pack('>i', value))
         self.written += 4
@@ -87,6 +95,12 @@ class DataOutputX:
         else:
             self.write_blob(value.encode('utf-8'))
 
+    def write_int_bytes(self, value):
+        """Write a byte array preceded by its length as an int32."""
+        self.write_int32(len(value))  # write length of the array
+        self.writer.write(value)  # write the actual byte array
+        self.written += len(value)  # update the count of written bytes
+
     def write_blob(self, value):
         length = len(value)
         if length == 0:
@@ -106,6 +120,11 @@ class DataOutputX:
             self.writer.write(value)
             self.written += length
 
+    def write(self, value):
+        """Write raw bytes to the buffer and update the written count."""
+        self.writer.write(value)
+        self.written += len(value)
+
     def write_boolean(self, value):
         if value:
             self.write_int8(1)
@@ -114,7 +133,7 @@ class DataOutputX:
 
     def write_value(self, value):
         if value is None:
-            value = self.new_nil_value()
+            value = NilValue()
         self.write_uint8(value.get_value_type())
         value.write(self)
 
@@ -133,20 +152,14 @@ class DataOutputX:
         except Exception as e:
             raise IOError(f"Error writing step: {e}")
 
-    @classmethod
-    def new_nil_value(cls):
-        # Example Nil value
-        return NilValue()
-
     def get_bytes(self):
         return self.writer.getvalue()
 
     def size(self):
         return self.written
 
-
-def new_data_output_x(writer=None):
-    return DataOutputX(writer)
+    def get_write_size(self):
+        return self.written
 
 
 if __name__ == '__main__':

@@ -1,9 +1,9 @@
 from enum import Enum
 
 from scouterx.common.constants.packconstant.packconstants import ALERT
-from scouterx.common.netdata.datainputx import DataInputX
 from scouterx.common.netdata.dataoutputx import DataOutputX
 from scouterx.common.netdata.mapvalue import MapValue
+from scouterx.common.netdata.pack import Pack
 
 
 class AlertLevel(Enum):
@@ -13,7 +13,7 @@ class AlertLevel(Enum):
     FATAL = 3
 
 
-class AlertPack:
+class AlertPack(Pack):
     def __init__(self):
         self.time = 0
         self.obj_type = ''
@@ -32,7 +32,7 @@ class AlertPack:
         output.write_string(self.message)
         output.write_value(self.tags)
 
-    def read(self, input: DataInputX):
+    def read(self, input):
         # Placeholder for read logic
         pass
 
@@ -42,6 +42,9 @@ class AlertPack:
     @classmethod
     def get_pack_type(cls):
         return ALERT
+
+    def to_string(self) -> str:
+        return str(self)
 
 
 if __name__ == '__main__':

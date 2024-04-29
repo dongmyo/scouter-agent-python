@@ -1,4 +1,5 @@
 from scouterx.common.constants.packconstant.packconstants import XLOG
+from scouterx.common.netdata.pack import Pack
 
 XTYPE_WEB_SERVICE = 0
 XTYPE_APP_SERVICE = 1
@@ -14,7 +15,23 @@ XLOG_DISCARD_ALL_FORCE = 4
 XLOG_DISCARD_PROFILE_FORCE = 5
 
 
-class XlogPack:
+# type XlogType uint8
+class XlogType:
+    def __init__(self, value: int = 0):
+        if not (0 <= value <= 255):
+            raise ValueError("XlogType must be between 0 and 255")
+        self.value = value
+
+
+# type XlogDiscardType uint8
+class XlogDiscardType:
+    def __init__(self, value: int = 0):
+        if not (0 <= value <= 255):
+            raise ValueError("XlogDiscardType must be between 0 and 255")
+        self.value = value
+
+
+class XlogPack(Pack):
     def __init__(self):
         self.EndTime = 0
         self.ObjHash = 0
@@ -122,3 +139,6 @@ class XlogPack:
     @classmethod
     def get_pack_type(cls):
         return XLOG
+
+    def to_string(self) -> str:
+        return str(self)

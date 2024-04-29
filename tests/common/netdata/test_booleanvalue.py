@@ -1,14 +1,14 @@
 import unittest
 
 from scouterx.common.netdata.booleanvalue import BooleanValue
-from scouterx.common.netdata.datainputx import new_data_input_x
-from scouterx.common.netdata.dataoutputx import new_data_output_x
+from scouterx.common.netdata.datainputx import DataInputX
+from scouterx.common.netdata.dataoutputx import DataOutputX
 
 
 class TestBooleanValue(unittest.TestCase):
     def test_boolean_value(self):
         # Setup data output
-        out = new_data_output_x()
+        out = DataOutputX()
 
         # Write a boolean value
         bvalue = BooleanValue.new_boolean_value(True)
@@ -16,7 +16,7 @@ class TestBooleanValue(unittest.TestCase):
 
         # Setup data input from output
         in_bytes = out.get_bytes()
-        inp = new_data_input_x(in_bytes)
+        inp = DataInputX(in_bytes)
 
         # Read boolean and test
         test_value = inp.read_boolean()

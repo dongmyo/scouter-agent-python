@@ -2,6 +2,7 @@ import io
 import struct
 from typing import Any, Optional, Tuple, Union
 
+from scouterx.common.netdata.packcreator import create_pack
 from scouterx.common.netdata.valuecreator import create_value
 
 
@@ -14,9 +15,12 @@ class DataInputX:
         else:
             self.reader = None
 
+        self.offset = 0
+
     def read_int8(self) -> Tuple[int, Optional[Exception]]:
         try:
             value = struct.unpack('>b', self.reader.read(1))[0]
+            self.offset += 1
             return value, None
         except Exception as e:
             return 0, e
@@ -24,6 +28,7 @@ class DataInputX:
     def read_uint8(self) -> Tuple[int, Optional[Exception]]:
         try:
             value = struct.unpack('>B', self.reader.read(1))[0]
+            self.offset += 1
             return value, None
         except Exception as e:
             return 0, e
@@ -31,6 +36,7 @@ class DataInputX:
     def read_int16(self) -> Tuple[int, Optional[Exception]]:
         try:
             value = struct.unpack('>h', self.reader.read(2))[0]
+            self.offset += 2
             return value, None
         except Exception as e:
             return 0, e
@@ -38,6 +44,7 @@ class DataInputX:
     def read_int32(self) -> Tuple[int, Optional[Exception]]:
         try:
             value = struct.unpack('>i', self.reader.read(4))[0]
+            self.offset += 4
             return value, None
         except Exception as e:
             return 0, e
@@ -45,6 +52,7 @@ class DataInputX:
     def read_int64(self) -> Tuple[int, Optional[Exception]]:
         try:
             value = struct.unpack('>q', self.reader.read(8))[0]
+            self.offset += 8
             return value, None
         except Exception as e:
             return 0, e
@@ -52,6 +60,7 @@ class DataInputX:
     def read_float32(self) -> Tuple[float, Optional[Exception]]:
         try:
             value = struct.unpack('>f', self.reader.read(4))[0]
+            self.offset += 4
             return value, None
         except Exception as e:
             return 0.0, e
@@ -59,6 +68,7 @@ class DataInputX:
     def read_float64(self) -> Tuple[float, Optional[Exception]]:
         try:
             value = struct.unpack('>d', self.reader.read(8))[0]
+            self.offset += 8
             return value, None
         except Exception as e:
             return 0.0, e
@@ -91,6 +101,7 @@ class DataInputX:
             elif length == 0:
                 return "", None
             data = self.reader.read(length)
+            self.offset += length
             return data.decode('utf-8'), None
         except Exception as e:
             return "", e
@@ -104,6 +115,7 @@ class DataInputX:
                 length = struct.unpack('>i', self.reader.read(4))[0]
             elif length == 0:
                 return b'', None
+            self.offset += length
             return self.reader.read(length), None
         except Exception as e:
             return b'', e
@@ -118,7 +130,6 @@ class DataInputX:
     def read_value(self):
         try:
             value_type, _ = self.read_int8()
-            # You would need to define CreateValue or similar to instantiate correct types
             value = create_value(value_type)
             if value is None:
                 raise ValueError(f"Not defined value type: {value_type}")
@@ -126,6 +137,30 @@ class DataInputX:
         except Exception as e:
             return None, e
 
+    def read_int_bytes(self):
+        length, err = self.read_int32()
+        if err:
+            return None, err
+        return self.read(length)
 
-def new_data_input_x(data=None):
-    return DataInputX(data)
+    def read(self, length):
+        try:
+            data = self.reader.read(length)
+            if len(data) < length:
+                raise ValueError(f"Failed to read {length} bytes from input stream")
+            self.offset += length
+            return data, None
+        except Exception as e:
+            return None, e
+
+    def read_pack(self):
+        pack_type, err = self.read_int8()
+        if err:
+            return None, err
+
+        pack = create_pack(pack_type)
+        if pack:
+            err = pack.read(self)
+            return pack, err
+        else:
+            return None, ValueError("Invalid pack type")
