@@ -1,3 +1,5 @@
+import numpy
+
 from scouterx.common.constants.packconstant.packconstants import TEXT
 from scouterx.common.netdata.pack import Pack
 
@@ -15,7 +17,7 @@ class TextPack(Pack):
     def write(self, data_output):
         try:
             data_output.write_string(str(self.xtype))
-            data_output.write_int32(self.hash)
+            data_output.write_int32(numpy.int32(self.hash))
             data_output.write_string(self.text)
             return None
         except Exception as e:

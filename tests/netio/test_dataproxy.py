@@ -31,7 +31,7 @@ class TestSendXlog(unittest.TestCase):
         obj_pack = ObjectPack()
         obj_pack.obj_name = "node-testcase0"
         obj_pack.obj_hash = hash_string(obj_pack.obj_name)
-        obj_pack.obj_type = "python"
+        obj_pack.obj_type = "golang"
         send_pack_direct(obj_pack)
         Configure().obj_hash = obj_pack.obj_hash
         return obj_pack

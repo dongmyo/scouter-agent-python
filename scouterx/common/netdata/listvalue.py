@@ -1,3 +1,5 @@
+import numpy
+
 from scouterx.common.constants.valueconstant.valueconstants import LIST
 from scouterx.common.netdata.booleanvalue import BooleanValue
 from scouterx.common.netdata.decimalvalue import DecimalValue
@@ -59,7 +61,7 @@ class ListValue:
     def get_int32(self, index):
         value = self.values[index]
         if isinstance(value, DecimalValue):
-            return int(value.value)
+            return numpy.int32(value.value)
         return 0
 
     def get_int64(self, index):

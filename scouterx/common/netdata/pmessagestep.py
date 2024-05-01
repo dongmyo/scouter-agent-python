@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+import numpy
+
 from scouterx.common.netdata.step import PARAMETERIZED_MESSAGE
 
 delimETX = 3
@@ -33,7 +35,7 @@ class PMessageStep:
             self.SingleStep.write(out)
             out.write_decimal32(self.Hash)
             out.write_decimal32(self.Elapsed)
-            out.write_decimal32(self.Level)
+            out.write_decimal32(numpy.int32(self.Level))
             out.write_string(self.paramString)
         except Exception as e:
             return e

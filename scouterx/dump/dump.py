@@ -7,6 +7,7 @@ import time
 import traceback
 from datetime import datetime
 
+from scouterx.common.netdata.listvalue import ListValue
 from scouterx.common.netdata.mappack import MapPack
 from scouterx.common.util.os_util import get_scouter_path
 from scouterx.dump.mutext_logger import MutexLogger
@@ -144,15 +145,22 @@ def profile_mutex_binary_dump(sec, rate):
 
 
 def list_dump_files():
-    pack = {'name': [], 'size': [], 'last_modified': []}
+    pack = MapPack()
+    name_lv = ListValue()
+    pack.put("name", name_lv)
+    size_lv = ListValue()
+    pack.put("size", size_lv)
+    modified_lv = ListValue()
+    pack.put("last_modified", modified_lv)
+
     dump_path = get_dump_path()
     for root, dirs, files in os.walk(dump_path):
         for file in files:
             file_path = os.path.join(root, file)
             stat = os.stat(file_path)
-            pack['name'].append(file)
-            pack['size'].append(stat.st_size)
-            pack['last_modified'].append(stat.st_mtime)
+            name_lv.add_string(file)
+            size_lv.add_int64(stat.st_size)
+            modified_lv.add_int64(stat.st_mtime)
     return pack
 
 

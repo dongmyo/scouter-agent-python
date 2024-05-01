@@ -1,5 +1,7 @@
 import socket
 
+import numpy
+
 from scouterx.common.constants.netcafeconstant.netcafeconstants import CAFE_MTU, CAFE
 from scouterx.common.logger.logger import error_logger
 from scouterx.common.netdata.dataoutputx import DataOutputX
@@ -51,8 +53,8 @@ class UDPClient:
         out.write(CAFE_MTU)
         out.write_int32(0)  # In deed, this value is objhash.. but i don't use objhash anymore.
         out.write_int64(pkid)
-        out.write_int16(total)
-        out.write_int16(num)
+        out.write_int16(numpy.int16(total))
+        out.write_int16(numpy.int16(num))
         out.write_blob(data)
         buff = out.get_bytes()
         self.conn.send(buff)

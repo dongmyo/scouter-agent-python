@@ -1,12 +1,15 @@
 import socket
 import threading
 
+import numpy
+
 from scouterx.common.constants.netcafeconstant.netcafeconstants import TCP_AGENT_V2
 from scouterx.common.constants.tcpflag import tcpflag
 from scouterx.common.logger.logger import info_logger, error_logger
 from scouterx.common.netdata.datainputx import DataInputX
 from scouterx.common.netdata.dataoutputx import DataOutputX
 from scouterx.conf.configure import Configure
+from scouterx.netio.tcpclient.handlers import handle
 
 ac = Configure()
 client = None
@@ -42,39 +45,46 @@ class TCPClient:
             self.conn = None
             return False
 
-        self.local_addr = "127.0.0.1"  # TODO: Update as needed
+        self.local_addr = "127.0.0.1"  # TODO
         return True
 
     def process(self):
         if not self.conn:
             return None
 
-        out = DataOutputX(self.conn)
-        server_addr = ac.net_collector_ip
-        server_port = ac.net_collector_tcp_port
+        with self.conn:
+            out = DataOutputX(self.conn)
+            server_addr = ac.net_collector_ip
+            server_port = ac.net_collector_tcp_port
 
-        out.write_int32(TCP_AGENT_V2)
-        out.write_int32(self.obj_hash)
+            out.write_int32(numpy.int32(TCP_AGENT_V2))
+            out.write_int32(self.obj_hash)
 
-        while self.obj_hash == ac.obj_hash and server_addr == ac.net_collector_ip and server_port == ac.net_collector_tcp_port:
-            self.conn.settimeout(self.so_timeout / 1000)
-            in_ = DataInputX(self.conn)
-            buff = in_.read_int_bytes()
+            while self.obj_hash == ac.obj_hash and server_addr == ac.net_collector_ip and server_port == ac.net_collector_tcp_port:
+                self.conn.settimeout(self.so_timeout / 1000)
+                in_ = DataInputX(self.conn)
+                buff, err = in_.read_int_bytes()
+                if err is not None:
+                    return err
 
-            in0 = DataInputX(buff)
-            cmd = in0.read_string()
-            parameter = in0.read_pack()
+                in0 = DataInputX(buff)
+                cmd, err = in0.read_string()
+                parameter, err = in0.read_pack()
+                if err is not None:
+                    return err
 
-            out0 = DataOutputX()
-            res = handle(cmd, parameter, in_, out0)
-            if res:
-                out0.write_uint8(tcpflag.HasNEXT)
-                pack = DataOutputX().write_pack(res)
-                pack_bytes = pack.get_bytes()
-                out0.write_int_bytes(pack_bytes)
+                out0 = DataOutputX()
+                res = handle(cmd, parameter, in_, out0)
+                if res:
+                    out0.write_uint8(tcpflag.HasNEXT)
+                    pack = DataOutputX()
+                    pack.write_pack(res)
+                    pack_bytes = pack.get_bytes()
+                    out0.write_int_bytes(pack_bytes)
 
-            out0.write_uint8(tcpflag.NoNEXT)
-            self.conn.sendall(out0.get_bytes())
+                out0.write_uint8(tcpflag.NoNEXT)
+                out.write(out0.get_bytes())
+
         return None
 
 

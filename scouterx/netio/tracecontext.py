@@ -1,4 +1,7 @@
 import time
+
+import numpy
+
 from scouterx.common.netdata.xlogpack import XlogType, XlogPack
 from scouterx.common.util.ip_util import ip_to_bytes
 from scouterx.common.util.keygen.keygen import KeyGen
@@ -16,7 +19,7 @@ class TraceContext:
         self.inherit = False
         self.inherit_start_time = time.time()
 
-        self.threadid = 0
+        self.goid = 0
         self.parent = None
         self.profile = ProfileCollector(self)
         self.profile_count = 0
@@ -85,8 +88,8 @@ class TraceContext:
         xlog.status = self.status
 
         xlog.discard_type = discard_type
-        xlog.profile_size = self.profile_size
-        xlog.profile_count = self.profile_count
+        xlog.profile_size = numpy.int32(self.profile_size)
+        xlog.profile_count = numpy.int32(self.profile_count)
         xlog.user_agent = self.user_agent
         xlog.referer = self.referer
 

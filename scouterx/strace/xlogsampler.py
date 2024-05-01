@@ -44,7 +44,7 @@ class XlogSampler:
             self.current_sampling3_service_patterns = ac.xlog_patterned3_sampling_service_patterns
             self.sampling3_pattern_matcher = CommaSeparatedChainedStrMatcher(ac.xlog_patterned3_sampling_service_patterns)
 
-    def e_evaluate_xlog_discard(self, elapsed, service_name):
+    def evaluate_xlog_discard(self, elapsed, service_name):
         discard_mode = XLOG_DISCARD_NONE
 
         if ac.xlog_sampling_enabled and self.is_exclude_sampling_service_pattern(service_name):

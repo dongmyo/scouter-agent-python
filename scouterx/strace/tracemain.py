@@ -3,6 +3,8 @@ import datetime
 import inspect
 import threading
 
+from starlette.requests import Request
+
 from scouterx.common.netdata.apicallstep import ApiCallStep
 from scouterx.common.netdata.hmessagestep import HashedMessageStep
 from scouterx.common.netdata.messagestep import MessageStep
@@ -17,7 +19,6 @@ from scouterx.common.util.time_util import millis_to_now
 from scouterx.counter.servicemetering import ServiceMetering
 from scouterx.netio.dataproxy import *
 from scouterx.netio.tcpclient.tcpmanager import start_tcp
-from scouterx.netio.tracecontext import TraceContext
 from scouterx.strace.tctxmanager.tctxmanager import register_end_stuck_service_forcibly_func, get_trace_context, end, start, new_trace_context
 from scouterx.strace.xlogsampler import get_xlog_sampler
 
@@ -134,14 +135,12 @@ def add_pmessage_step(ctx, level, message, elapsed, *params):
         tctx.profile.add(step)
 
 
-def start_http_service(ctx, req):
+def start_http_service(ctx, req: Request):
     with contextlib.suppress(Exception):
         if ctx is None:
             return BackgroundContext()
-        if get_trace_context(ctx) is not None:
-            return ctx
 
-        service_name = f"{req.path}<>{req.method}"
+        service_name = f"{req.url.path}<>{req.method}"
 
         # TODO: propagation request (gxid, caller)
         # TODO: query profile
@@ -154,45 +153,13 @@ def start_http_service(ctx, req):
         tctx.referer = send_referer(req.headers.get('Referer'))
         profile_http_headers(req, tctx)
 
-        return new_ctx
+        return new_ctx, tctx
 
 
-def start_fast_http_service(ctx, c):
-    with contextlib.suppress(Exception):
-        if ctx is None:
-            return BackgroundContext()
-        if get_trace_context(ctx) is not None:
-            return ctx
-
-        service_name = f"{c.uri().path().decode()}<{c.method().decode()}>"
-
-        # TODO: propagation request (gxid, caller)
-        # TODO: query profile
-        # TODO: body (of specific service) profile
-
-        new_ctx, tctx = start_service(ctx, service_name, get_fast_http_remote_ip(c))
-        tctx.x_type = XTYPE_WEB_SERVICE
-        tctx.user_agent = send_user_agent(c.user_agent().decode())
-        tctx.http_method = c.method().decode()
-        tctx.referer = send_referer(c.referer().decode())
-        profile_fast_http_headers(c, tctx)
-
-        return new_ctx
-
-
-def get_remote_ip(req):
-    ip = req.remote_addr
+def get_remote_ip(req: Request):
+    ip = req.client.host
     if ac.trace_http_client_ip_header_key != "":
         header_ip = req.headers.get(ac.trace_http_client_ip_header_key)
-        if header_ip:
-            ip = header_ip
-    return ip
-
-
-def get_fast_http_remote_ip(req):
-    ip = req.remote_addr().decode()
-    if ac.trace_http_client_ip_header_key != "":
-        header_ip = req.request.header.peek(ac.trace_http_client_ip_header_key).decode()
         if header_ip:
             ip = header_ip
     return ip
@@ -212,21 +179,7 @@ def end_http_service(ctx, req, res):
             tctx = get_trace_context(ctx)
             if tctx is None or tctx.closed:
                 return
-            tctx.status = res.status_code
-        end_any_service(ctx)
-
-
-def end_fast_http_service(ctx, c):
-    with contextlib.suppress(Exception):
-        # TODO: body (of specific service) profile from req.body
-
-        if c is not None:
-            if ctx is None:
-                return
-            tctx = get_trace_context(ctx)
-            if tctx is None or tctx.closed:
-                return
-            tctx.status = c.response.status_code()
+            tctx.status = numpy.int32(res.status_code)
         end_any_service(ctx)
 
 
@@ -234,12 +187,11 @@ def start_service(ctx, service_name, remote_ip):
     with contextlib.suppress(Exception):
         if ctx is None:
             ctx = BackgroundContext()
-        if get_trace_context(ctx) is not None:
-            return ctx
+
         new_ctx, tctx = start_service_logic(ctx, service_name, remote_ip)
         tctx.x_type = XTYPE_APP_SERVICE
 
-        return new_ctx
+        return new_ctx, tctx
 
 
 def end_service(ctx):
@@ -348,8 +300,8 @@ def start_service_logic(ctx, service_name, remote_addr):
     start(tctx)
 
     tctx.gxid = tctx.txid
-    tctx.threadid = threading.get_ident()
-    tctx.profile.add(MessageStep(f"thread:{tctx.threadid}", 0))
+    tctx.goid = threading.get_ident()
+    tctx.profile.add(MessageStep(f"thread:{tctx.goid}", 0))
 
     tctx.service_name = service_name
     tctx.service_hash = send_service_name(service_name)
@@ -514,30 +466,6 @@ def profile_http_headers(r, tctx):
 
     if ac.profile_http_querystring_enabled:
         tctx.profile.add(MessageStep(f"query: {r.url.query}", start_time))
-
-
-def profile_fast_http_headers(c, tctx):
-    start_time = millis_to_now(tctx.start_time)
-    if ac.profile_http_header_enabled:
-        not_all = len(ac.profile_http_header_keys) > 0
-        if not_all:
-            split = ac.profile_http_header_keys.split(',')
-            for k in split:
-                all = c.request.header.peek_all(k.strip())
-                values = [value.decode() for value in all]
-                if values:
-                    v = ', '.join(values)
-                    tctx.profile.add(MessageStep(f"header: {k}: {v}", start_time))
-        else:
-            for k in c.request.headers:
-                all = c.request.header.peek_all(k)
-                values = [value.decode() for value in all]
-                vs = ', '.join(values)
-                tctx.profile.add(MessageStep(f"header: {k}: {vs}", start_time))
-
-    if ac.profile_http_querystring_enabled:
-        query_string = '&'.join(f"{arg}={value[0]}" for arg, value in c.query_args().items())
-        tctx.profile.add(MessageStep(f"query: {query_string}", start_time))
 
 
 def start_api_call(ctx, api_call_name, address):

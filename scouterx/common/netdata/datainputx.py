@@ -1,4 +1,5 @@
 import io
+import socket
 import struct
 from typing import Any, Optional, Tuple, Union
 
@@ -11,6 +12,10 @@ class DataInputX:
         if isinstance(data, bytes):
             self.reader = io.BytesIO(data)
         elif isinstance(data, io.IOBase):
+            self.reader = data
+        elif isinstance(data, socket.socket):
+            self.reader = data.makefile('rwb', buffering=0)
+        elif hasattr(data, 'read'):
             self.reader = data
         else:
             self.reader = None
@@ -160,7 +165,7 @@ class DataInputX:
 
         pack = create_pack(pack_type)
         if pack:
-            err = pack.read(self)
+            pack.read(self)
             return pack, err
         else:
             return None, ValueError("Invalid pack type")

@@ -1,3 +1,5 @@
+import numpy
+
 from scouterx.common.constants.packconstant.packconstants import OBJECT
 from scouterx.common.netdata.mapvalue import MapValue
 from scouterx.common.netdata.pack import Pack
@@ -28,7 +30,7 @@ class ObjectPack(Pack):
         self.obj_type, err = inp.read_string()
 
         obj_hash, err = inp.read_decimal()
-        self.obj_hash = int(obj_hash)
+        self.obj_hash = numpy.int32(obj_hash)
 
         self.obj_name, err = inp.read_string()
         self.address, err = inp.read_string()
@@ -86,7 +88,7 @@ class ObjectPack2(ObjectPack):
             self.obj_type, err = inp.read_string()
 
             obj_hash, err = inp.read_decimal()
-            self.obj_hash = int(obj_hash)
+            self.obj_hash = numpy.int32(obj_hash)
 
             self.obj_name, err = inp.read_string()
             self.address, err = inp.read_string()

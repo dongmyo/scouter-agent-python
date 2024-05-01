@@ -1,5 +1,5 @@
 import contextvars
-from datetime import datetime
+import time
 from typing import Callable, List, Optional
 
 from scouterx.common.netdata.alertpack import AlertLevel
@@ -62,17 +62,29 @@ def get_all_tctx() -> List[TraceContext]:
 
 def get_active_count() -> List[int]:
     max_count = 2000
+    count = 0
     active = [0, 0, 0]
-    now = datetime.now()
+    now = time.time()
+
     for tctx in txid_map.get_values():
-        elapsed = int((now - tctx.start_time).total_seconds() * 1000)
-        index = min(elapsed // ac.trace_activeservice_yellow_time, 2)
-        active[index] += 1
-        if elapsed > ac.stuck_service_base_time_ms and f_end_stuck_service_forcibly:
+        if count >= max_count:
+            break
+        count += 1
+
+        elapsed = int((now - tctx.start_time) * 1000)
+        if elapsed <= ac.trace_activeservice_yellow_time:
+            active[0] += 1
+        elif elapsed <= ac.trace_activeservice_red_time:
+            active[1] += 1
+        else:
+            active[2] += 1
+
+        if elapsed > ac.stuck_service_base_time_ms:
             f_end_stuck_service_forcibly(tctx)
-            message = f"service: {tctx.service_name}, elapsed: {elapsed}, goId: {tctx.threadid}, tctxGoId: {tctx.threadid}"
+            message = f"service: {tctx.service_name}, elapsed: {elapsed}, threadId: {tctx.goid}, tctxThreadId: {tctx.goid}"
             if ac.stuck_service_alert_enabled:
                 send_alert(AlertLevel.ERROR, "STUCK_SERVICE", message)
             else:
                 send_alert(AlertLevel.WARN, "STUCK_SERVICE", message)
+
     return active

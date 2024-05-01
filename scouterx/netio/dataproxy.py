@@ -1,5 +1,7 @@
 import time
 
+import numpy
+
 from scouterx.common.netdata.alertpack import AlertPack
 from scouterx.common.netdata.step_util import steps_to_bytes
 from scouterx.common.netdata.textpack import TextPack
@@ -42,7 +44,7 @@ def reset_text_sent():
 def send_service_name(name):
     if name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if service_name_sent.contains(hash):
         return hash
     service_name_sent.add_key(hash)
@@ -53,7 +55,7 @@ def send_service_name(name):
 def send_hashed_message(name):
     if name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if hash_message_sent.contains(hash):
         return hash
     hash_message_sent.add_key(hash)
@@ -64,7 +66,7 @@ def send_hashed_message(name):
 def send_obj_name(name):
     if name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if obj_name_sent.contains(hash):
         return hash
     obj_name_sent.add_key(hash)
@@ -73,9 +75,9 @@ def send_obj_name(name):
 
 
 def send_referer(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if referer_sent.contains(hash):
         return hash
     referer_sent.add_key(hash)
@@ -84,9 +86,9 @@ def send_referer(name):
 
 
 def send_user_agent(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if user_agent_sent.contains(hash):
         return hash
     user_agent_sent.add_key(hash)
@@ -97,7 +99,7 @@ def send_user_agent(name):
 def send_method(name):
     if name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if method_sent.contains(hash):
         return hash
     method_sent.add_key(hash)
@@ -106,9 +108,9 @@ def send_method(name):
 
 
 def send_apicall(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if apicall_sent.contains(hash):
         return hash
     apicall_sent.add_key(hash)
@@ -117,9 +119,9 @@ def send_apicall(name):
 
 
 def send_error(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if error_sent.contains(hash):
         return hash
     error_sent.add_key(hash)
@@ -141,9 +143,9 @@ def send_alert(level, title, message):
 
 
 def send_login(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if login_sent.contains(hash):
         return hash
     login_sent.add_key(hash)
@@ -152,9 +154,9 @@ def send_login(name):
 
 
 def send_desc(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if desc_sent.contains(hash):
         return hash
     desc_sent.add_key(hash)
@@ -163,9 +165,9 @@ def send_desc(name):
 
 
 def send_stack_element(name):
-    if name == "":
+    if name is None or name == "":
         return 0
-    hash = hash_string(name)
+    hash = numpy.int32(hash_string(name))
     if stack_element_sent.contains(hash):
         return hash
     stack_element_sent.add_key(hash)
@@ -202,7 +204,7 @@ def send_profile0(steps, tctx):
     pack.obj_hash = ac.obj_hash
     pack.profile = steps_to_bytes(steps)
     pack.service = tctx.service_hash
-    pack.elapsed = int((time.time() - tctx.start_time) * 1000)
+    pack.elapsed = numpy.int32((time.time() - tctx.start_time) * 1000)
     tctx.profile_count += len(steps)
     tctx.profile_size += len(pack.profile)
 

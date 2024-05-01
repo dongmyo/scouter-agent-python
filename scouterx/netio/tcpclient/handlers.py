@@ -1,8 +1,10 @@
+import numpy
+
 from scouterx.common.logger.logger import trace_logger
 from scouterx.common.netdata.booleanvalue import BooleanValue
 from scouterx.common.util.hexa_util import int_to_xlog_string32
 from scouterx.common.util.time_util import millis_to_now
-from scouterx.conf.configure import Configure, ConfigureDesc
+from scouterx.conf.configure import Configure
 from scouterx.conf.exthandler import load_config_text, save_config_text
 from scouterx.dump.dump import *
 from scouterx.netio.dataproxy import reset_text_sent
@@ -192,14 +194,14 @@ def get_thread_detail(param):
         p.put("Stack Trace", f"[info] no traceContext. txid: {int_to_xlog_string32(txid)}")
         return p
 
-    threadid = tctx.threadid
+    goid = tctx.goid
     p.put("Service Txid", int_to_xlog_string32(tctx.txid))
     p.put("Service Name", tctx.service_name)
     p.put("Service Elapsed", millis_to_now(tctx.start_time))
     p.put("Thread Id", -1)
     p.put("State", "n/a")
-    p.put("Thread Name", f"[thread] {str(threadid)}")
-    p.put("Stack Trace", "stacktrace for goroutine is not yet supported")
+    p.put("Thread Name", f"[thread] {str(goid)}")
+    p.put("Stack Trace", "stacktrace for thread is not yet supported")
     p.put("Last trace method", tctx.last_method)
 
     return p
@@ -224,11 +226,11 @@ def get_active_list():
     for tctx in if_tctx:
         if tctx is None:
             return mpack
-        threadid = tctx.threadid
-        id.add_int64(threadid)
+        goid = tctx.goid
+        id.add_int64(goid)
         elapsed.add_int32(millis_to_now(tctx.start_time))
         service.add_string(tctx.service_name)
-        name.add_string(f"[goroutine] {threadid}")
+        name.add_string(f"[thread] {goid}")
         txid.add_string(int_to_xlog_string32(tctx.txid))
         ip.add_string(tctx.remote_ip)
         state.add_string("n/a")
@@ -300,5 +302,5 @@ def list_config_value_type():
     mp = MapPack()
     desc_map = Configure.get_configure_desc_map()
     for key, desc in desc_map.items():
-        mp.put(key, int(desc.value_type))
+        mp.put(key, numpy.int32(desc.value_type))
     return mp
