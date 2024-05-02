@@ -5,6 +5,7 @@ import threading
 
 from starlette.requests import Request
 
+from scouterx.common.logger.logger import error_logger
 from scouterx.common.netdata.apicallstep import ApiCallStep
 from scouterx.common.netdata.hmessagestep import HashedMessageStep
 from scouterx.common.netdata.messagestep import MessageStep
@@ -140,7 +141,7 @@ def start_http_service(ctx, req: Request):
         if ctx is None:
             return BackgroundContext()
 
-        service_name = f"{req.url.path}<>{req.method}"
+        service_name = f"{req.url.path}<{req.method}>"
 
         # TODO: propagation request (gxid, caller)
         # TODO: query profile
@@ -373,13 +374,11 @@ def find_xlog_discard(tctx, elapsed):
 
 
 def start_method(ctx):
-    with contextlib.suppress(Exception):
-        return start_method_with_param(ctx)  # do not call start_method_with_param (because of method name finding depth)
+    return start_method_with_param_internal(ctx)
 
 
 def start_method_with_param(ctx, *params):
-    with contextlib.suppress(Exception):
-        return start_method_with_param_internal(ctx, *params)
+    return start_method_with_param_internal(ctx, *params)
 
 
 def start_custom_method(ctx, method_name):
@@ -387,32 +386,28 @@ def start_custom_method(ctx, method_name):
 
 
 def start_custom_method_with_param(ctx, method_name, *params):
-    with contextlib.suppress(Exception):
-        if ctx is None:
-            return None
-        tctx = get_trace_context(ctx)
-        if tctx is None:
-            return None
+    if ctx is None:
+        return None
 
-        return start_method_with_param_internal(tctx, method_name, method_name, *params)
+    tctx = get_trace_context(ctx)
+    if tctx is None:
+        return None
+
+    return start_method_with_param0(tctx, method_name, method_name, *params)
 
 
 def start_method_with_param_internal(ctx, *params):
     if ctx is None:
         return None
+
     tctx = get_trace_context(ctx)
     if tctx is None:
         return None
 
-    frame = inspect.currentframe().f_back.f_back
-    func_name = frame.f_code.co_name
-    module = inspect.getmodule(frame)
-    if module:
-        full_name = f"{module.__name__}.{func_name}()"
-    else:
-        full_name = func_name + "()"
+    func_name = ctx.get('func_name')
+    method_name = f"{func_name}()" if func_name else 'unknown()'
 
-    return start_method_with_param0(tctx, full_name, full_name, *params)
+    return start_method_with_param0(tctx, func_name, method_name, *params)
 
 
 def start_method_with_param0(tctx, func_name, method_name, *params):
@@ -461,8 +456,7 @@ def profile_http_headers(r, tctx):
                     tctx.profile.add(MessageStep(f"header: {k}: {v}", start_time))
         else:
             for k, v in r.headers.items():
-                vs = ', '.join(v)
-                tctx.profile.add(MessageStep(f"header: {k}: {vs}", start_time))
+                tctx.profile.add(MessageStep(f"header: {k}: {v}", start_time))
 
     if ac.profile_http_querystring_enabled:
         tctx.profile.add(MessageStep(f"query: {r.url.query}", start_time))
