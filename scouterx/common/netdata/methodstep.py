@@ -13,14 +13,7 @@ class MethodStep(SingleStep):
         return METHOD
 
     def write(self, out):
-        if super().write(out):
-            return True
-
-        if out.write_decimal32(self.hash):
-            return True
-        if out.write_decimal32(self.elapsed):
-            return True
-        if out.write_decimal32(self.cpu_time):
-            return True
-
-        return False
+        super().write(out)
+        out.write_decimal32(self.hash)
+        out.write_decimal32(self.elapsed)
+        out.write_decimal32(self.cpu_time)

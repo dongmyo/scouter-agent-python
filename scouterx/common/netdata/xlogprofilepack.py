@@ -4,29 +4,26 @@ from scouterx.common.netdata.pack import Pack
 
 class XlogProfilePack(Pack):
     def __init__(self):
-        self.Time = 0
-        self.ObjHash = 0
-        self.Service = 0
-        self.Txid = 0
-        self.Elapsed = 0
-        self.Profile = bytearray()
+        self.time = 0
+        self.obj_hash = 0
+        self.service = 0
+        self.txid = 0
+        self.elapsed = 0
+        self.profile = bytearray()
 
     def write(self, out):
-        try:
-            out.write_decimal(self.Time)
-            out.write_decimal32(self.ObjHash)
-            out.write_decimal32(self.Service)
-            out.write_int64(self.Txid)
-            out.write_blob(self.Profile)
-        except Exception as e:
-            return e
+        out.write_decimal(self.time)
+        out.write_decimal32(self.obj_hash)
+        out.write_decimal32(self.service)
+        out.write_int64(self.txid)
+        out.write_blob(self.profile)
 
     def read(self, inp):
         # TODO: not yet implemented
         return self, None
 
     def __str__(self):
-        return f"Profile: objHash: {self.ObjHash}"
+        return f"Profile: objHash: {self.obj_hash}"
 
     @classmethod
     def get_pack_type(cls):

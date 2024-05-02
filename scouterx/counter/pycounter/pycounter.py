@@ -40,5 +40,5 @@ def get_py_counter(prev):
 
 
 if __name__ == '__main__':
-    prev_counter = PyCounter()  # This would be stored from a previous call
+    prev_counter = PyCounter()
     current_counter = get_py_counter(prev_counter)

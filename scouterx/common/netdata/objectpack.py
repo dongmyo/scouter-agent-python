@@ -67,20 +67,16 @@ class ObjectPack2(ObjectPack):
         self.family = 0
 
     def write(self, out):
-        try:
-            out.write_string(self.site_id)
-            out.write_string(self.obj_type)
-            out.write_decimal32(self.obj_hash)
-            out.write_string(self.obj_name)
-            out.write_string(self.address)
-            out.write_string(self.version)
-            out.write_boolean(self.alive)
-            out.write_decimal(self.wakeup)
-            out.write_int8(self.family)
-            out.write_value(self.tags)
-            return None
-        except Exception as e:
-            return e
+        out.write_string(self.site_id)
+        out.write_string(self.obj_type)
+        out.write_decimal32(self.obj_hash)
+        out.write_string(self.obj_name)
+        out.write_string(self.address)
+        out.write_string(self.version)
+        out.write_boolean(self.alive)
+        out.write_decimal(self.wakeup)
+        out.write_int8(self.family)
+        out.write_value(self.tags)
 
     def read(self, inp):
         try:

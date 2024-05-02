@@ -78,13 +78,10 @@ class SingleStep(Step):
         return self.parent
 
     def write(self, out) -> None:
-        try:
-            out.write_decimal32(self.parent)
-            out.write_decimal32(self.index)
-            out.write_decimal32(self.start_time)
-            out.write_decimal32(0)
-        except Exception as e:
-            raise IOError(f"Error writing data: {e}")
+        out.write_decimal32(self.parent)
+        out.write_decimal32(self.index)
+        out.write_decimal32(self.start_time)
+        out.write_decimal32(0)
 
     def read(self, inp) -> 'Step':
         # TODO: SingleStep.Read()

@@ -33,12 +33,11 @@ class MapPack(Pack):
             self.table[key] = value
         return self, err
 
-    def write(self, data_output_x):
-        err = data_output_x.write_decimal(len(self.table))
+    def write(self, out):
+        out.write_decimal(len(self.table))
         for key, value in self.table.items():
-            err = data_output_x.write_string(key)
-            err = data_output_x.write_value(value)
-        return err
+            out.write_string(key)
+            out.write_value(value)
 
     @classmethod
     def get_pack_type(cls):

@@ -13,9 +13,8 @@ class NilValue:
         # Assuming `read` should do nothing but return the existing instance and no error
         return self, None
 
-    def write(self, data_output):
-        # Assuming `write` should do nothing and return no error
-        return None
+    def write(self, out):
+        pass
 
     def get_value_type(self):
         return NULL

@@ -3,9 +3,11 @@ import time
 
 from scouterx.common.netdata.perfcounterpack import PerfCounterPack
 from scouterx.conf.configure import Configure
+from scouterx.counter.const import *
 from scouterx.counter.pycounter.pycounter import PyCounter, get_py_counter
 from scouterx.counter.servicemetering import ServiceMetering
 from scouterx.counter.valuemetering import ValueMetering
+from scouterx.netio.dataproxy import send_pack_direct
 
 prev_py_counter = PyCounter()  # This should be defined as part of the GoCounter import
 active_counter = ValueMetering()
@@ -27,10 +29,11 @@ def send_py_counter():
     c = get_py_counter(prev_py_counter)  # This function should be adapted from the GoCounter module
     prev_py_counter = c
 
-    pack.put("PyThreadNum", c.thread_num)
-    pack.put("GcPerSec", c.gc_per_sec)
-    pack.put("GcPausePerSec", c.gc_pause_per_sec)
-    pack.put("HeapAlloc", c.heap_alloc)
+    pack.put(GO_GOROUTINE, c.thread_num)
+    pack.put(GO_CGO_CALL, 0)
+    pack.put(GO_GC_COUNT, c.gc_per_sec)
+    pack.put(GO_GC_PAUSE, c.gc_pause_per_sec)
+    pack.put(GO_HEAP_USED, c.heap_alloc)
 
     send_pack_direct(pack)
 
@@ -45,9 +48,9 @@ def send_service_counter():
 
     # TODO: activeCounter
     # TODO: WAS_ACTIVE_SERVICE, WAS_ACTIVE_SPEED
-    pack.put("TPS", counter.error_rate)
-    pack.put("Elapsed", counter.elapsed)
-    pack.put("ErrorRate", counter.tps)
+    pack.put(TPS, counter.error_rate)
+    pack.put(ELAPSED_TIME, counter.elapsed)
+    pack.put(ERROR_RATE, counter.tps)
 
     send_pack_direct(pack)
 

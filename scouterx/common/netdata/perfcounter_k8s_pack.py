@@ -24,22 +24,19 @@ class PerfCounterK8SPack(Pack):
         self.data = MapValue()
 
     def write(self, out):
-        try:
-            out.write_int64(self.time)
-            out.write_string(self.site_id)
-            out.write_string(self.cluster)
-            out.write_string(self.namespace)
-            out.write_string(self.node_name)
-            out.write_string(self.daemonset_name)
-            out.write_string(self.deployment_name)
-            out.write_string(self.pod_name)
-            out.write_string(self.container_name)
-            out.write_string(self.obj_name)
-            out.write_int8(self.timetype)
-            out.write_int8(self.metric_level)
-            out.write_value(self.data)
-        except Exception as e:
-            return e
+        out.write_int64(self.time)
+        out.write_string(self.site_id)
+        out.write_string(self.cluster)
+        out.write_string(self.namespace)
+        out.write_string(self.node_name)
+        out.write_string(self.daemonset_name)
+        out.write_string(self.deployment_name)
+        out.write_string(self.pod_name)
+        out.write_string(self.container_name)
+        out.write_string(self.obj_name)
+        out.write_int8(self.timetype)
+        out.write_int8(self.metric_level)
+        out.write_value(self.data)
 
     def read(self, data_input_x):
         try:

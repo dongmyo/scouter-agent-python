@@ -20,11 +20,8 @@ class DoubleValue:
         except Exception as e:
             return None, e
 
-    def write(self, data_output):
-        try:
-            return None, data_output.write_float64(self.value)
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write_float64(self.value)
 
     @classmethod
     def get_value_type(cls):

@@ -24,12 +24,8 @@ class BooleanValue:
         except Exception as e:
             return None, e
 
-    def write(self, data_output):
-        try:
-            data_output.write_boolean(self.value)
-            return None
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write_boolean(self.value)
 
     def __str__(self):
         return str(self.value).lower()

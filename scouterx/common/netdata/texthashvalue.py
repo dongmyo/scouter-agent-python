@@ -20,12 +20,8 @@ class TextHashValue:
         except Exception as e:
             return None, e
 
-    def write(self, data_output):
-        try:
-            _, err = data_output.write_int32(self.value)
-            return err
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write_int32(self.value)
 
     @classmethod
     def get_value_type(cls):

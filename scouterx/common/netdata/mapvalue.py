@@ -34,15 +34,11 @@ class MapValue:
             self.table[key] = value
         return self, None
 
-    def write(self, data_output):
-        try:
-            data_output.write_decimal(len(self.table))
-            for key, value in self.table.items():
-                data_output.write_string(key)
-                data_output.write_value(value)
-            return None
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write_decimal(len(self.table))
+        for key, value in self.table.items():
+            out.write_string(key)
+            out.write_value(value)
 
     @classmethod
     def get_value_type(cls):

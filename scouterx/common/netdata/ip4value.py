@@ -25,12 +25,8 @@ class Ip4Value:
         except Exception as e:
             return None, e
 
-    def write(self, data_output_x):
-        try:
-            data_output_x.write(self.value)
-            return None
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write(self.value)
 
     @classmethod
     def get_value_type(cls):

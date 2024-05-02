@@ -12,4 +12,4 @@ class MessageStep(SingleStep):
 
     def write(self, out):
         super().write(out)
-        return out.write_string(self.message)
+        out.write_string(self.message)

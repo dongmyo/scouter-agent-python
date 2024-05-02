@@ -14,14 +14,10 @@ class TextPack(Pack):
     def new_text_pack(cls):
         return cls()
 
-    def write(self, data_output):
-        try:
-            data_output.write_string(str(self.xtype))
-            data_output.write_int32(numpy.int32(self.hash))
-            data_output.write_string(self.text)
-            return None
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write_string(str(self.xtype))
+        out.write_int32(numpy.int32(self.hash))
+        out.write_string(self.text)
 
     def read(self, data_input):
         # TODO not yet implemented

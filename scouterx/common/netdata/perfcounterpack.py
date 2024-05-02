@@ -18,13 +18,10 @@ class PerfCounterPack(Pack):
         self.data = MapValue()
 
     def write(self, out):
-        try:
-            out.write_int64(self.time)
-            out.write_string(self.obj_name)
-            out.write_int8(self.time_type)
-            out.write_value(self.data)
-        except Exception as e:
-            return e
+        out.write_int64(self.time)
+        out.write_string(self.obj_name)
+        out.write_int8(self.time_type)
+        out.write_value(self.data)
 
     def read(self, data_input_x):
         try:

@@ -16,20 +16,16 @@ class ApiCallStep(SingleStep):
     def get_step_type(cls):
         return APICALL  # APICALL should be defined as a constant representing the type byte
 
-    def write(self, data_output_x):
-        try:
-            super().write(data_output_x)
-            data_output_x.write_decimal(self.txid)
-            data_output_x.write_decimal32(self.hash)
-            data_output_x.write_decimal32(self.elapsed)
-            data_output_x.write_decimal32(self.cpu_time)
-            data_output_x.write_decimal32(self.error)
-            data_output_x.write_uint8(self.opt)
-            if self.opt == 1:
-                data_output_x.write_string(self.address)
-            return None
-        except Exception as e:
-            return e
+    def write(self, out):
+        super().write(out)
+        out.write_decimal(self.txid)
+        out.write_decimal32(self.hash)
+        out.write_decimal32(self.elapsed)
+        out.write_decimal32(self.cpu_time)
+        out.write_decimal32(self.error)
+        out.write_uint8(self.opt)
+        if self.opt == 1:
+            out.write_string(self.address)
 
 
 def new_api_call_step():

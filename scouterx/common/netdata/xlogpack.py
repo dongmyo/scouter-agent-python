@@ -83,7 +83,7 @@ class XlogPack(Pack):
         self.profile_count = 0
         self.b3_mode = False
         self.profile_size = 0
-        self.discard_type = 0
+        self.discard_type = XlogDiscardType()
         self.ignore_global_consequent_sampling = False
 
     def is_driving(self):

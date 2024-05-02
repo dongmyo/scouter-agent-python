@@ -44,10 +44,10 @@ def get_all_counter_on_pack():
     c = get_py_counter(prev_py_counter)
     prev_py_counter = c
 
-    pack.put(PY_THREAD, c.thread_num)
-    pack.put(PY_GC_COUNT, c.gc_per_sec)
-    pack.put(PY_GC_PAUSE, c.gc_pause_per_sec)
-    pack.put(PY_HEAP_USED, c.heap_alloc)
+    pack.put(GO_GOROUTINE, c.thread_num)
+    pack.put(GO_GC_COUNT, c.gc_per_sec)
+    pack.put(GO_GC_PAUSE, c.gc_pause_per_sec)
+    pack.put(GO_HEAP_USED, c.heap_alloc)
 
     sc = ServiceMetering().get_all_counter(30)
     pack.put(TPS, sc.tps)

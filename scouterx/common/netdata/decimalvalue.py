@@ -20,12 +20,8 @@ class DecimalValue:
         except Exception as e:
             return None, e
 
-    def write(self, data_output):
-        try:
-            data_output.write_decimal(self.value)
-            return None
-        except Exception as e:
-            return e
+    def write(self, out):
+        out.write_decimal(self.value)
 
     @classmethod
     def get_value_type(cls):
